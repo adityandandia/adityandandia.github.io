@@ -1,832 +1,761 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aditya ND — Field Notes</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;700&family=Special+Elite&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <title>Aditya ND</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
+      --ink: #0d0d0b;
       --paper: #f5f0e8;
-      --paper-dark: #ede7d5;
-      --paper-aged: #e8dfc8;
-      --ink: #1a1408;
-      --ink-light: #3d3020;
-      --ink-faded: #8b7355;
-      --ink-very-faded: #c4b49a;
-      --red-stamp: #c0392b;
-      --red-stamp-light: rgba(192,57,43,0.15);
-      --blue-ink: #1a3a5c;
-      --rule-line: rgba(26,20,8,0.1);
-      --rule-margin: rgba(192,57,43,0.25);
-      --font-serif: 'Shippori Mincho', 'Noto Serif JP', serif;
-      --font-hand: 'Caveat', cursive;
-      --font-type: 'Special Elite', cursive;
+      --aged: #d8ceb8;
+      --faint: #8a8070;
+      --accent: #1a1a18;
+      --red: #8b2020;
+      --gap: clamp(2rem, 5vw, 4rem);
     }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      background: #2a2218;
-      font-family: var(--font-serif);
-      color: var(--ink);
-      overflow-x: hidden;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    .notebook {
-      max-width: 860px;
-      margin: 40px auto;
       background: var(--paper);
-      box-shadow: -8px 0 16px rgba(0,0,0,0.3), 8px 0 24px rgba(0,0,0,0.4), 0 0 60px rgba(0,0,0,0.5);
-      position: relative;
-      min-height: 100vh;
+      color: var(--ink);
+      font-family: 'Special Elite', 'Courier Prime', monospace;
+      font-size: clamp(14px, 1.6vw, 16px);
+      line-height: 1.75;
+      /* subtle paper texture via repeating gradient */
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 27px,
+          rgba(180,165,130,0.08) 27px,
+          rgba(180,165,130,0.08) 28px
+        );
     }
 
-    .notebook::before {
-      content: '';
-      position: absolute;
-      left: 72px;
-      top: 0; bottom: 0;
-      width: 1px;
-      background: var(--rule-margin);
-      z-index: 10;
-    }
-
-    .notebook::after {
-      content: '';
-      position: absolute;
-      right: 0; top: 0; bottom: 0;
-      width: 6px;
-      background: linear-gradient(to right, transparent, rgba(0,0,0,0.08));
-    }
-
-    .ruled-page {
-      background-image: repeating-linear-gradient(
-        to bottom,
-        transparent,
-        transparent 31px,
-        var(--rule-line) 31px,
-        var(--rule-line) 32px
-      );
-      background-position: 0 48px;
-      position: relative;
-    }
-
-    .notebook-header {
-      background: var(--paper-aged);
-      border-bottom: 2px solid rgba(26,20,8,0.15);
-      padding: 20px 40px 20px 100px;
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+      padding: 1rem clamp(1.5rem, 6vw, 5rem);
+      background: rgba(245,240,232,0.92);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--faint);
     }
 
-    .notebook-header::before {
-      content: '';
-      position: absolute;
-      left: 72px;
-      top: 0; bottom: 0;
-      width: 1px;
-      background: var(--rule-margin);
+    .nav-brand {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
     }
 
-    .holes {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
+    .nav-links {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .hole {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      background: #2a2218;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-    }
-
-    .header-title {
-      font-family: var(--font-hand);
-      font-size: 22px;
-      color: var(--ink-faded);
-      letter-spacing: 0.05em;
-    }
-
-    .header-nav {
-      display: flex;
-      gap: 24px;
+      gap: 2rem;
       list-style: none;
     }
 
-    .header-nav a {
-      font-family: var(--font-hand);
-      font-size: 16px;
-      color: var(--ink-faded);
-      text-decoration: none;
-      transition: color 0.2s;
-      position: relative;
-    }
-
-    .header-nav a:hover { color: var(--ink); }
-
-    .header-nav a::after {
-      content: '';
-      position: absolute;
-      bottom: -2px; left: 0; right: 0;
-      height: 1px;
-      background: var(--ink);
-      transform: scaleX(0);
-      transition: transform 0.2s;
-    }
-
-    .header-nav a:hover::after { transform: scaleX(1); }
-
-    .page {
-      padding: 48px 48px 64px 100px;
-      position: relative;
-    }
-
-    #hero {
-      min-height: 88vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding-top: 80px;
-      padding-bottom: 80px;
-    }
-
-    .stamp {
-      display: inline-block;
-      font-family: var(--font-type);
-      font-size: 11px;
-      letter-spacing: 0.2em;
+    .nav-links a {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--red-stamp);
-      border: 2px solid var(--red-stamp);
-      padding: 4px 12px;
-      border-radius: 2px;
-      transform: rotate(-1.5deg);
-      opacity: 0.85;
-      margin-bottom: 32px;
-      width: fit-content;
+      color: var(--ink);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .nav-links a:hover { opacity: 1; }
+
+    /* ── LAYOUT ── */
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 clamp(1.5rem, 6vw, 3rem);
+    }
+
+    section {
+      padding: var(--gap) 0;
+      border-bottom: 1px solid var(--faint);
+    }
+
+    section:last-of-type { border-bottom: none; }
+
+    /* ── HERO ── */
+    #hero {
+      padding-top: calc(var(--gap) + 5rem);
+      padding-bottom: var(--gap);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .blink {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: blink 1.4s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.15; }
     }
 
     .hero-date {
-      font-family: var(--font-hand);
-      font-size: 14px;
-      color: var(--ink-faded);
-      margin-bottom: 8px;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--faint);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
     }
 
-    h1.hero-name {
-      font-family: var(--font-serif);
-      font-size: clamp(56px, 10vw, 96px);
-      font-weight: 700;
-      line-height: 0.9;
-      letter-spacing: -2px;
-      color: var(--ink);
-      margin-bottom: 16px;
-    }
-
-    h1.hero-name .kanji {
-      font-size: 0.45em;
-      display: block;
-      color: var(--ink-faded);
-      letter-spacing: 0.3em;
-      font-weight: 300;
-      margin-bottom: 4px;
+    h1 {
+      font-family: 'Special Elite', monospace;
+      font-size: clamp(2.6rem, 7vw, 4.2rem);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.5rem;
     }
 
     .hero-handle {
-      font-family: var(--font-type);
-      font-size: 14px;
-      color: var(--ink-faded);
-      letter-spacing: 0.1em;
-      margin-bottom: 40px;
+      font-size: 0.8rem;
+      letter-spacing: 0.14em;
+      color: var(--faint);
+      text-transform: uppercase;
+      margin-bottom: 1.8rem;
     }
 
-    .hero-desc {
-      font-family: var(--font-hand);
-      font-size: 20px;
-      color: var(--ink-light);
-      line-height: 1.9;
-      max-width: 480px;
-      margin-bottom: 40px;
-      border-left: 3px solid var(--ink-very-faded);
-      padding-left: 20px;
+    .hero-tagline {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      max-width: 500px;
+      margin-bottom: 2.4rem;
+      border-left: 2px solid var(--ink);
+      padding-left: 1.2rem;
     }
 
-    .status-note {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-hand);
-      font-size: 15px;
-      color: var(--blue-ink);
-      background: rgba(26,58,92,0.07);
-      border: 1px solid rgba(26,58,92,0.2);
-      padding: 8px 18px;
-      border-radius: 1px;
-      transform: rotate(0.5deg);
-    }
-
-    .status-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: #2ecc71;
-      animation: blink 2s infinite;
-    }
-
-    .hero-cta {
+    .hero-meta {
       display: flex;
-      gap: 16px;
-      margin-top: 48px;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--faint);
+      letter-spacing: 0.06em;
+      margin-bottom: 2.4rem;
+    }
+
+    .hero-meta span::before { content: "↳  "; }
+
+    .btn-row {
+      display: flex;
+      gap: 1rem;
       flex-wrap: wrap;
     }
 
     .btn {
-      font-family: var(--font-hand);
-      font-size: 16px;
-      padding: 10px 28px;
+      font-family: 'Special Elite', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.65rem 1.4rem;
+      border: 1px solid var(--ink);
       text-decoration: none;
-      border-radius: 1px;
-      transition: all 0.2s;
+      color: var(--ink);
+      background: transparent;
+      transition: background 0.2s, color 0.2s;
       cursor: pointer;
-      border: none;
-      display: inline-block;
     }
 
-    .btn-ink { background: var(--ink); color: var(--paper); }
-    .btn-ink:hover { background: var(--ink-light); transform: translateY(-1px); box-shadow: 2px 4px 12px rgba(26,20,8,0.2); }
-    .btn-outline { background: transparent; color: var(--ink); border: 1.5px solid var(--ink-very-faded); }
-    .btn-outline:hover { border-color: var(--ink); transform: translateY(-1px); }
+    .btn:hover { background: var(--ink); color: var(--paper); }
+    .btn.filled { background: var(--ink); color: var(--paper); }
+    .btn.filled:hover { background: transparent; color: var(--ink); }
 
-    .page-divider { border: none; border-top: 1px solid rgba(26,20,8,0.12); margin: 0; }
-
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      margin-bottom: 40px;
+    .page-num {
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      color: var(--faint);
+      text-transform: uppercase;
+      margin-top: 3rem;
     }
 
-    .section-num {
-      font-family: var(--font-type);
-      font-size: 12px;
-      color: var(--red-stamp);
-      letter-spacing: 0.1em;
+    /* ── SECTION HEADERS ── */
+    .section-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 0.5rem;
     }
 
-    h2.section-title {
-      font-family: var(--font-serif);
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 700;
-      color: var(--ink);
-      letter-spacing: -1px;
-      line-height: 1.1;
+    h2 {
+      font-family: 'Special Elite', monospace;
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      line-height: 1.2;
+      margin-bottom: 1.8rem;
+      letter-spacing: 0.01em;
     }
 
-    .section-jp {
-      font-family: var(--font-serif);
-      font-size: 13px;
-      color: var(--ink-very-faded);
-      letter-spacing: 0.3em;
-      margin-left: auto;
-    }
-
-    /* ABOUT */
+    /* ── ABOUT ── */
     .about-body {
-      display: grid;
-      grid-template-columns: 1fr 200px;
-      gap: 48px;
-      align-items: start;
+      font-size: 1rem;
+      line-height: 1.9;
+      max-width: 600px;
     }
 
-    .about-text p {
-      font-family: var(--font-hand);
-      font-size: 18px;
-      color: var(--ink-light);
-      line-height: 2;
-      margin-bottom: 20px;
+    .about-body p + p { margin-top: 1.2rem; }
+
+    .about-body strong { font-weight: 700; }
+
+    .about-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 2rem;
     }
 
-    .about-text p strong { color: var(--ink); font-weight: 600; }
-
-    .margin-notes { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
-
-    .margin-note {
-      font-family: var(--font-hand);
-      font-size: 13px;
-      color: var(--ink-faded);
-      line-height: 1.6;
-      border-left: 2px solid var(--ink-very-faded);
-      padding-left: 10px;
-      transform: rotate(0.5deg);
-    }
-
-    .margin-note .note-arrow { color: var(--red-stamp); font-size: 16px; }
-
-    /* ROADMAP */
-    .timeline-entry {
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 24px;
-      padding: 20px 0;
-      border-bottom: 1px dashed var(--rule-line);
-      position: relative;
-      transition: background 0.2s;
-    }
-
-    .timeline-entry:hover { background: rgba(26,20,8,0.02); }
-
-    .timeline-entry.current {
-      background: rgba(192,57,43,0.04);
-    }
-
-    .timeline-entry.current::before {
-      content: '▶ NOW';
-      position: absolute;
-      left: -52px;
-      top: 24px;
-      font-family: var(--font-type);
-      font-size: 9px;
-      color: var(--red-stamp);
-      letter-spacing: 0.1em;
-    }
-
-    .entry-date {
-      font-family: var(--font-type);
-      font-size: 12px;
-      color: var(--ink-faded);
-      letter-spacing: 0.05em;
-      padding-top: 4px;
-      text-align: right;
-      padding-right: 16px;
-      border-right: 1px solid var(--rule-line);
-    }
-
-    .entry-title {
-      font-family: var(--font-serif);
-      font-size: 17px;
-      font-weight: 700;
+    .pill {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      border: 1px solid var(--faint);
+      padding: 0.3rem 0.8rem;
       color: var(--ink);
-      margin-bottom: 4px;
     }
 
-    .entry-desc {
-      font-family: var(--font-hand);
-      font-size: 15px;
-      color: var(--ink-faded);
-      line-height: 1.7;
+    /* ── PROJECTS ── */
+    .projects-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
 
-    .entry-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-
-    .etag {
-      font-family: var(--font-type);
-      font-size: 10px;
-      color: var(--ink-faded);
-      border: 1px solid var(--ink-very-faded);
-      padding: 2px 8px;
-      letter-spacing: 0.05em;
+    .project-card {
+      border: 1px solid var(--faint);
+      padding: 1.6rem;
+      position: relative;
+      transition: border-color 0.2s;
     }
 
-    .etag.active { border-color: var(--red-stamp); color: var(--red-stamp); background: var(--red-stamp-light); }
+    .project-card:hover { border-color: var(--ink); }
 
-    /* PROJECTS */
-    .project-entry {
-      padding: 28px 0;
-      border-bottom: 1px solid var(--rule-line);
-      display: grid;
-      grid-template-columns: 48px 1fr auto;
-      gap: 20px;
-      align-items: start;
-      transition: background 0.2s;
-    }
-
-    .project-entry:hover { background: rgba(26,20,8,0.02); }
-
-    .project-index {
-      font-family: var(--font-hand);
-      font-size: 28px;
-      color: var(--ink-very-faded);
-      line-height: 1;
-      padding-top: 4px;
+    .project-num {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--faint);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
     }
 
     .project-title {
-      font-family: var(--font-serif);
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 6px;
-      letter-spacing: -0.3px;
+      font-family: 'Special Elite', monospace;
+      font-size: 1.1rem;
+      margin-bottom: 0.6rem;
     }
 
     .project-desc {
-      font-family: var(--font-hand);
-      font-size: 16px;
-      color: var(--ink-faded);
-      line-height: 1.8;
-      max-width: 500px;
-      margin-bottom: 10px;
+      font-size: 0.88rem;
+      color: #2e2c28;
+      line-height: 1.75;
+      margin-bottom: 1rem;
     }
 
-    .project-stack { display: flex; gap: 8px; flex-wrap: wrap; }
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
 
-    .stack-tag { font-family: var(--font-type); font-size: 10px; color: var(--ink-faded); letter-spacing: 0.08em; }
-    .stack-tag.key { color: var(--blue-ink); font-weight: bold; }
+    .tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 1px solid var(--faint);
+      padding: 0.2rem 0.6rem;
+      color: var(--faint);
+    }
 
     .project-badge {
-      font-family: var(--font-type);
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      padding: 4px 10px;
-      border: 1.5px solid;
-      border-radius: 1px;
-      white-space: nowrap;
-      height: fit-content;
-    }
-
-    .badge-flagship { color: var(--red-stamp); border-color: var(--red-stamp); background: var(--red-stamp-light); }
-    .badge-oss { color: var(--blue-ink); border-color: rgba(26,58,92,0.3); background: rgba(26,58,92,0.05); }
-    .badge-wip { color: var(--ink-faded); border-color: var(--ink-very-faded); }
-
-    /* SKILLS */
-    .skills-notebook { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-
-    .skill-col-title {
-      font-family: var(--font-type);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: var(--ink-faded);
+      position: absolute;
+      top: 1.2rem;
+      right: 1.2rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      border-bottom: 1px solid var(--rule-line);
-      padding-bottom: 8px;
-      margin-bottom: 16px;
+      border: 1px solid var(--ink);
+      padding: 0.2rem 0.6rem;
+      color: var(--ink);
     }
 
-    .skill-item {
-      font-family: var(--font-hand);
-      font-size: 16px;
-      color: var(--ink-light);
-      padding: 6px 0;
-      border-bottom: 1px dashed var(--rule-line);
+    .project-badge.flagship {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── BLOG ── */
+    .blog-intro {
+      font-size: 0.92rem;
+      line-height: 1.8;
+      max-width: 560px;
+      margin-bottom: 2rem;
+      color: #2e2c28;
+    }
+
+    .blog-grid {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      flex-direction: column;
+      gap: 1.4rem;
+      margin-bottom: 2rem;
     }
 
-    .skill-item::before { content: '—'; color: var(--ink-very-faded); font-size: 12px; }
-
-    /* CONTACT */
-    #contact { background: var(--paper-aged); border-top: 2px solid rgba(26,20,8,0.1); }
-
-    .letter-date { font-family: var(--font-hand); font-size: 14px; color: var(--ink-faded); margin-bottom: 24px; }
-    .letter-salutation { font-family: var(--font-serif); font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 20px; letter-spacing: -0.5px; }
-    .letter-body { font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); line-height: 2; margin-bottom: 32px; }
-    .letter-sign { font-family: var(--font-hand); font-size: 28px; color: var(--ink); margin-bottom: 32px; transform: rotate(-1deg); display: inline-block; }
-
-    .contact-links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
-
-    .clink {
-      font-family: var(--font-type);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      color: var(--ink-faded);
+    .blog-card {
+      display: flex;
+      gap: 1.4rem;
+      align-items: flex-start;
+      border-bottom: 1px solid var(--aged);
+      padding-bottom: 1.4rem;
       text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      border: 1px solid var(--ink-very-faded);
-      transition: all 0.2s;
+      color: inherit;
+      transition: opacity 0.2s;
     }
 
-    .clink:hover { border-color: var(--ink); color: var(--ink); background: rgba(26,20,8,0.04); }
+    .blog-card:hover { opacity: 0.7; }
 
-    .notebook-footer {
-      background: var(--paper-dark);
-      border-top: 1px solid rgba(26,20,8,0.12);
-      padding: 20px 48px 20px 100px;
+    .blog-ep {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      min-width: 48px;
+      padding-top: 0.2rem;
+    }
+
+    .blog-card-body { flex: 1; }
+
+    .blog-card-title {
+      font-family: 'Special Elite', monospace;
+      font-size: 0.98rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .blog-card-desc {
+      font-size: 0.8rem;
+      color: #3a3830;
+      line-height: 1.6;
+    }
+
+    .blog-card-arrow {
+      font-size: 0.85rem;
+      color: var(--faint);
+      padding-top: 0.15rem;
+      transition: transform 0.2s;
+    }
+
+    .blog-card:hover .blog-card-arrow { transform: translateX(4px); }
+
+    .blog-all-link {
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 1px;
+    }
+
+    .blog-all-link:hover { opacity: 0.6; }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2rem;
+    }
+
+    .skill-group-title {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 0.9rem;
+      border-bottom: 1px solid var(--aged);
+      padding-bottom: 0.4rem;
+    }
+
+    .skill-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .skill-list li {
+      font-size: 0.85rem;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .skill-list li::before {
+      content: "· ";
+      color: var(--faint);
+    }
+
+    /* ── CONTACT ── */
+    .contact-header {
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 1rem;
+    }
+
+    .contact-statement {
+      font-family: 'Special Elite', monospace;
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      line-height: 1.5;
+      max-width: 480px;
+      margin-bottom: 1rem;
+    }
+
+    .contact-sub {
+      font-size: 0.88rem;
+      color: #2e2c28;
+      line-height: 1.75;
+      max-width: 420px;
+      margin-bottom: 2.4rem;
+    }
+
+    .contact-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .contact-link {
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid var(--faint);
+      padding: 0.5rem 1.1rem;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .contact-link:hover {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .contact-sign {
+      font-size: 0.82rem;
+      color: var(--faint);
+      margin-top: 2.4rem;
+      font-style: italic;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--faint);
+      padding: 1.5rem clamp(1.5rem, 6vw, 3rem);
+      max-width: 780px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--faint);
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
-    .footer-text { font-family: var(--font-type); font-size: 11px; color: var(--ink-very-faded); letter-spacing: 0.08em; }
-
-    .footer-stamp {
-      font-family: var(--font-type);
-      font-size: 10px;
-      color: var(--red-stamp);
-      border: 1.5px solid var(--red-stamp);
-      padding: 3px 10px;
-      opacity: 0.6;
-      letter-spacing: 0.1em;
-      transform: rotate(2deg);
+    /* ── DIVIDER ── */
+    hr.section-rule {
+      border: none;
+      border-top: 1px solid var(--faint);
+      margin: 0;
     }
 
-    .page-num { position: absolute; bottom: 24px; right: 32px; font-family: var(--font-hand); font-size: 13px; color: var(--ink-very-faded); }
-
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-    .fade-in { opacity: 1; transform: none; animation: fadeIn 0.6s ease both; }
-    .fade-in.visible { opacity: 1; transform: none; }
-
-    .hero-stamp { animation: fadeIn 0.5s ease 0.1s both; }
-    .hero-date-el { animation: fadeIn 0.5s ease 0.2s both; }
-    .hero-name-el { animation: fadeIn 0.5s ease 0.3s both; }
-    .hero-handle-el { animation: fadeIn 0.5s ease 0.4s both; }
-    .hero-desc-el { animation: fadeIn 0.5s ease 0.5s both; }
-    .hero-status-el { animation: fadeIn 0.5s ease 0.6s both; }
-    .hero-cta-el { animation: fadeIn 0.5s ease 0.7s both; }
-
-    @media (max-width: 700px) {
-      .notebook { margin: 0; }
-      .notebook::before { left: 48px; }
-      .notebook-header { padding-left: 70px; }
-      .page { padding-left: 68px; padding-right: 24px; }
-      .about-body { grid-template-columns: 1fr; }
-      .margin-notes { display: none; }
-      .skills-notebook { grid-template-columns: 1fr; }
-      .timeline-entry { grid-template-columns: 1fr; }
-      .entry-date { text-align: left; border-right: none; border-bottom: 1px solid var(--rule-line); padding-right: 0; padding-bottom: 4px; }
-      .project-entry { grid-template-columns: 36px 1fr; }
-      .project-badge { display: none; }
-      .header-nav { gap: 12px; }
-      .notebook-footer { padding-left: 68px; }
+    /* ── RESPONSIVE ── */
+    @media (max-width: 560px) {
+      .nav-links { display: none; }
+      h1 { font-size: 2.2rem; }
+      .skills-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-<div class="notebook">
 
-  <header class="notebook-header">
-    <div class="holes">
-      <div class="hole"></div>
-      <div class="hole"></div>
-    </div>
-    <span class="header-title">field notes / aditya nd</span>
-    <nav>
-      <ul class="header-nav">
-        <li><a href="#about">About</a></li>
-        <li><a href="#roadmap">Roadmap</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+  <!-- NAV -->
+  <nav>
+    <a class="nav-brand" href="#">field notes / aditya nd</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#writing">Writing</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
 
-  <!-- HERO -->
-  <section id="hero" class="page ruled-page">
-    <div class="stamp hero-stamp">● ACTIVE · ML ENGINEERING</div>
-    <div class="hero-date hero-date-el">March 2026 — Bengaluru, India</div>
-    <h1 class="hero-name hero-name-el">
-      Aditya ND
-    </h1>
-    <div class="hero-handle hero-handle-el">@wimpykidaditya</div>
-    <p class="hero-desc hero-desc-el">
-      Building intelligent systems from the ground up.<br/>
-      Student. ML engineer in progress.<br/>
-      Depth over breadth, always.
-    </p>
-    <div class="status-note hero-status-el">
-      <span class="status-dot"></span>
-      Phase 1 — Linear Algebra · AQI Baseline · Andrew Ng
-    </div>
-    <div class="hero-cta hero-cta-el">
-      <a href="#projects" class="btn btn-ink">View Projects</a>
-      <a href="#contact" class="btn btn-outline">Get in Touch</a>
-    </div>
-    <span class="page-num">p. 01</span>
-  </section>
+  <div class="page">
 
-  <hr class="page-divider"/>
-
-  <!-- ABOUT -->
-  <section id="about" class="page ruled-page">
-    <div class="section-header">
-      <span class="section-num">§ 01</span>
-      <h2 class="section-title">About</h2>
-    </div>
-    <div class="about-body fade-in">
-      <div class="about-text">
-        <p>I'm a <strong>CS (AI & ML) student</strong> based in Bengaluru, working through a structured 14-month roadmap to become a <strong>core ML engineer with MLOps capability</strong>.</p>
-        <p>My approach is <strong>depth over breadth</strong> — every project is deliberately ordered, building compounding understanding from first principles to production systems.</p>
-        <p>Currently: Linear Algebra (MIT 18.06), finishing the Andrew Ng ML Specialization, and building the <strong>AQI Construction Impact Predictor</strong> as my first real production system.</p>
-        <p>Open to <strong>internships, research collaborations</strong>, and interesting problems worth solving.</p>
+    <!-- HERO -->
+    <section id="hero">
+      <div class="hero-eyebrow">
+        <span class="blink"></span>
+        Active · ML Engineering
       </div>
-      <div class="margin-notes">
-        <div class="margin-note"><span class="note-arrow">↳</span><br/>roadmap: Mar 2026 → Apr 2027</div>
-        <div class="margin-note"><span class="note-arrow">↳</span><br/>14+ months, 8 projects planned</div>
-        <div class="margin-note"><span class="note-arrow">↳</span><br/>morning: math & theory<br/>evening: code & build</div>
-        <div class="margin-note"><span class="note-arrow">↳</span><br/>open source contrib: AI-Scientist-V2</div>
+      <div class="hero-date">March 2026 — Bengaluru, India</div>
+      <h1>Aditya ND</h1>
+      <div class="hero-handle">@wimpykidaditya</div>
+      <p class="hero-tagline">
+        Building intelligent systems from the ground up.<br/>
+        Student. ML engineer in progress.<br/>
+        Depth over breadth, always.
+      </p>
+      <div class="hero-meta">
+        <span>morning: math &amp; theory</span>
+        <span>evening: code &amp; build</span>
+        <span>writing: ML from Scratch series</span>
       </div>
-    </div>
-    <span class="page-num">p. 02</span>
-  </section>
+      <div class="btn-row">
+        <a class="btn filled" href="#projects">View Projects</a>
+        <a class="btn" href="#contact">Get in Touch</a>
+      </div>
+      <div class="page-num">p. 01</div>
+    </section>
 
-  <hr class="page-divider"/>
+    <!-- ABOUT -->
+    <section id="about">
+      <div class="section-label">§ 01</div>
+      <h2>About</h2>
+      <div class="about-body">
+        <p>
+          I'm a <strong>CS (AI &amp; ML) student</strong> based in Bengaluru, working through a structured roadmap to become a <strong>core ML engineer with MLOps capability</strong>.
+        </p>
+        <p>
+          My approach is <strong>depth over breadth</strong> — every project is deliberately ordered, building compounding understanding from first principles to production systems.
+        </p>
 
-  <!-- ROADMAP -->
-  <section id="roadmap" class="page ruled-page">
-    <div class="section-header">
-      <span class="section-num">§ 02</span>
-      <h2 class="section-title">Roadmap</h2>
-    </div>
-    <div class="timeline fade-in">
-      <div class="timeline-entry current">
-        <div class="entry-date">Mar 2026<br/>→ Now</div>
-        <div class="entry-content">
-          <div class="entry-title">Phase 1 — Math Foundations & Baseline</div>
-          <div class="entry-desc">Linear Algebra (MIT 18.06), Andrew Ng ML Specialization, AQI weather-only baseline model</div>
-          <div class="entry-tags"><span class="etag active">In Progress</span><span class="etag">Linear Algebra</span><span class="etag">LightGBM</span></div>
-        </div>
-      </div>
-      <div class="timeline-entry">
-        <div class="entry-date">Apr – Jun<br/>2026</div>
-        <div class="entry-content">
-          <div class="entry-title">Foundations from Scratch</div>
-          <div class="entry-desc">Linear Regression → Logistic Regression → Neural Network, all from NumPy up. No frameworks.</div>
-          <div class="entry-tags"><span class="etag">NumPy</span><span class="etag">Calculus</span><span class="etag">Backprop</span></div>
-        </div>
-      </div>
-      <div class="timeline-entry">
-        <div class="entry-date">Jul – Sep<br/>2026</div>
-        <div class="entry-content">
-          <div class="entry-title">Tabular ML + Deep Learning</div>
-          <div class="entry-desc">Tabular ML system, CNN/PyTorch, DL Specialization Courses 1–3</div>
-          <div class="entry-tags"><span class="etag">PyTorch</span><span class="etag">CNNs</span><span class="etag">DL Spec</span></div>
-        </div>
-      </div>
-      <div class="timeline-entry">
-        <div class="entry-date">Oct – Dec<br/>2026</div>
-        <div class="entry-content">
-          <div class="entry-title">NLP + MLOps Stack</div>
-          <div class="entry-desc">NLP pipeline, then Git/Linux/Docker → FastAPI → AWS deployment</div>
-          <div class="entry-tags"><span class="etag">NLP</span><span class="etag">Docker</span><span class="etag">FastAPI</span><span class="etag">AWS</span></div>
-        </div>
-      </div>
-      <div class="timeline-entry">
-        <div class="entry-date">Jan – Apr<br/>2027</div>
-        <div class="entry-content">
-          <div class="entry-title">AQI Flagship + Advanced Project</div>
-          <div class="entry-desc">Full production AQI system, then AutoML / RL / small LLM as the capstone</div>
-          <div class="entry-tags"><span class="etag">Production</span><span class="etag">MLOps</span><span class="etag">Research</span></div>
-        </div>
-      </div>
-    </div>
-    <span class="page-num">p. 03</span>
-  </section>
 
-  <hr class="page-divider"/>
+      </div>
+      <div class="about-pills">
+        <span class="pill">LightGBM</span>
+        <span class="pill">NumPy</span>
+        <span class="pill">PyTorch</span>
+        <span class="pill">FastAPI</span>
+        <span class="pill">MIT 18.06</span>
+        <span class="pill">Backprop</span>
+      </div>
+      <div class="page-num">p. 02</div>
+    </section>
 
-  <!-- PROJECTS -->
-  <section id="projects" class="page ruled-page">
-    <div class="section-header">
-      <span class="section-num">§ 03</span>
-      <h2 class="section-title">Projects</h2>
-    </div>
-    <div class="projects-list fade-in">
-      <div class="project-entry">
-        <div class="project-index">01</div>
-        <div class="project-body">
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="section-label">§ 02</div>
+      <h2>Projects</h2>
+      <div class="projects-grid">
+
+        <div class="project-card">
+          <div class="project-badge flagship">Flagship</div>
+          <div class="project-num">01</div>
           <div class="project-title">AQI Construction Impact Predictor</div>
-          <div class="project-desc">Dual-model LightGBM system — regressor for AQI delta, classifier for spike risk. Does construction intensity explain AQI variability beyond weather? Served via FastAPI + Docker.</div>
-          <div class="project-stack"><span class="stack-tag key">LightGBM</span><span class="stack-tag key">FastAPI</span><span class="stack-tag key">Docker</span><span class="stack-tag">AWS</span><span class="stack-tag">Research</span></div>
+          <p class="project-desc">
+            Dual-model LightGBM system — regressor for AQI delta, classifier for spike risk. Does construction intensity explain AQI variability beyond weather? R² improved +26.6%, spike recall +27%. Served via FastAPI + Docker.
+          </p>
+          <div class="project-tags">
+            <span class="tag">LightGBM</span>
+            <span class="tag">FastAPI</span>
+            <span class="tag">Docker</span>
+            <span class="tag">AWS</span>
+            <span class="tag">Research</span>
+          </div>
         </div>
-        <span class="project-badge badge-flagship">FLAGSHIP</span>
-      </div>
-      <div class="project-entry">
-        <div class="project-index">02</div>
-        <div class="project-body">
+
+        <div class="project-card">
+          <div class="project-badge">Complete</div>
+          <div class="project-num">02</div>
           <div class="project-title">Neural Network from Scratch</div>
-          <div class="project-desc">Full backpropagation, forward pass, and gradient descent with NumPy only. No PyTorch. No TensorFlow. Just the math, made to run.</div>
-          <div class="project-stack"><span class="stack-tag key">NumPy</span><span class="stack-tag">Calculus</span><span class="stack-tag">From Scratch</span></div>
+          <p class="project-desc">
+            Generalized neural network via configurable layer_dims, ReLU hidden + sigmoid output, full backpropagation with L2 regularization. 96.67% accuracy on make_moons. NumPy only — no PyTorch, no TensorFlow. Just the math, made to run.
+          </p>
+          <div class="project-tags">
+            <span class="tag">NumPy</span>
+            <span class="tag">Calculus</span>
+            <span class="tag">Backprop</span>
+            <span class="tag">From Scratch</span>
+          </div>
         </div>
-        <span class="project-badge badge-wip">IN PROGRESS</span>
-      </div>
-      <div class="project-entry">
-        <div class="project-index">03</div>
-        <div class="project-body">
+
+        <div class="project-card">
+          <div class="project-badge">Open Source</div>
+          <div class="project-num">03</div>
           <div class="project-title">AI-Scientist-V2 Contribution</div>
-          <div class="project-desc">Open-source contribution to AI-Scientist-V2 — research automation tooling for LLM-driven scientific paper generation pipelines.</div>
-          <div class="project-stack"><span class="stack-tag key">Open Source</span><span class="stack-tag">LLM</span><span class="stack-tag">Python</span></div>
+          <p class="project-desc">
+            Open-source contribution to AI-Scientist-V2 — research automation tooling for LLM-driven scientific paper generation pipelines.
+          </p>
+          <div class="project-tags">
+            <span class="tag">Open Source</span>
+            <span class="tag">LLM</span>
+            <span class="tag">Python</span>
+          </div>
         </div>
-        <span class="project-badge badge-oss">OPEN SOURCE</span>
+
+
+
       </div>
-      <div class="project-entry">
-        <div class="project-index">04</div>
-        <div class="project-body">
-          <div class="project-title">N8N Automation Workflows</div>
-          <div class="project-desc">Production automation workflows — multi-step integrations across APIs, webhook triggers, and data transformation pipelines.</div>
-          <div class="project-stack"><span class="stack-tag key">N8N</span><span class="stack-tag">Automation</span><span class="stack-tag">Webhooks</span></div>
+      <div class="page-num">p. 03</div>
+    </section>
+
+    <!-- TECHNICAL WRITING -->
+    <section id="writing">
+      <div class="section-label">§ 03</div>
+      <h2>Technical Writing</h2>
+      <p class="blog-intro">
+        ML from Scratch — a series building every core algorithm by hand, from the math up. No black boxes. Published on Hashnode, cross-posted to LinkedIn and X.
+      </p>
+      <div class="blog-grid">
+
+        <a class="blog-card" href="https://adityand.hashnode.dev/ml-from-scratch-ep-1-linear-regression" target="_blank" rel="noopener">
+          <span class="blog-ep">Ep 01</span>
+          <div class="blog-card-body">
+            <div class="blog-card-title">Linear Regression</div>
+            <div class="blog-card-desc">Deriving the cost function, gradient descent, and the normal equation from scratch.</div>
+          </div>
+          <span class="blog-card-arrow">→</span>
+        </a>
+
+        <a class="blog-card" href="https://adityand.hashnode.dev/ml-from-scratch-ep-2-logistic-regression" target="_blank" rel="noopener">
+          <span class="blog-ep">Ep 02</span>
+          <div class="blog-card-body">
+            <div class="blog-card-title">Logistic Regression</div>
+            <div class="blog-card-desc">Sigmoid, binary cross-entropy loss, and decision boundaries derived by hand.</div>
+          </div>
+          <span class="blog-card-arrow">→</span>
+        </a>
+
+        <a class="blog-card" href="https://adityand.hashnode.dev/ml-from-scratch-ep-3-neural-network-architecture" target="_blank" rel="noopener">
+          <span class="blog-ep">Ep 03</span>
+          <div class="blog-card-body">
+            <div class="blog-card-title">Neural Network Architecture</div>
+            <div class="blog-card-desc">Layers, activations, forward pass — building the skeleton before the learning kicks in.</div>
+          </div>
+          <span class="blog-card-arrow">→</span>
+        </a>
+
+        <a class="blog-card" href="https://adityand.hashnode.dev/ml-from-scratch-ep-4-backpropagation" target="_blank" rel="noopener">
+          <span class="blog-ep">Ep 04</span>
+          <div class="blog-card-body">
+            <div class="blog-card-title">Backpropagation</div>
+            <div class="blog-card-desc">The chain rule in action — deriving gradients layer by layer, no shortcuts taken.</div>
+          </div>
+          <span class="blog-card-arrow">→</span>
+        </a>
+
+        <a class="blog-card" href="https://adityand.hashnode.dev/ml-from-scratch-ep-5" target="_blank" rel="noopener">
+          <span class="blog-ep">Ep 05</span>
+          <div class="blog-card-body">
+            <div class="blog-card-title">Episode 5</div>
+            <div class="blog-card-desc">Latest entry in the series.</div>
+          </div>
+          <span class="blog-card-arrow">→</span>
+        </a>
+
+      </div>
+      <a class="blog-all-link" href="https://adityand.hashnode.dev" target="_blank" rel="noopener">All posts on Hashnode →</a>
+      <div class="page-num">p. 04</div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+      <div class="section-label">§ 04</div>
+      <h2>Skills</h2>
+      <div class="skills-grid">
+        <div>
+          <div class="skill-group-title">ML / AI</div>
+          <ul class="skill-list">
+            <li>LightGBM · XGBoost</li>
+            <li>Scikit-learn</li>
+            <li>PyTorch (learning)</li>
+            <li>Anomaly Detection</li>
+            <li>K-Means Clustering</li>
+            <li>Regression · Classification</li>
+          </ul>
         </div>
-        <span class="project-badge badge-wip">SHIPPED</span>
+        <div>
+          <div class="skill-group-title">Engineering</div>
+          <ul class="skill-list">
+            <li>Python · NumPy · Pandas</li>
+            <li>FastAPI</li>
+            <li>Docker</li>
+            <li>Git · Linux</li>
+            <li>AWS (learning)</li>
+            <li>REST APIs</li>
+          </ul>
+        </div>
+        <div>
+          <div class="skill-group-title">Mathematics</div>
+          <ul class="skill-list">
+            <li>Linear Algebra (MIT 18.06)</li>
+            <li>SVD · Orthogonality</li>
+            <li>Calculus · Gradients</li>
+            <li>Probability &amp; Stats</li>
+            <li>Information Theory</li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <span class="page-num">p. 04</span>
-  </section>
+      <div class="page-num">p. 05</div>
+    </section>
 
-  <hr class="page-divider"/>
-
-  <!-- SKILLS -->
-  <section id="skills" class="page ruled-page">
-    <div class="section-header">
-      <span class="section-num">§ 04</span>
-      <h2 class="section-title">Skills</h2>
-    </div>
-    <div class="skills-notebook fade-in">
-      <div class="skill-column">
-        <div class="skill-col-title">ML / AI</div>
-        <div class="skill-item">LightGBM · XGBoost</div>
-        <div class="skill-item">Scikit-learn</div>
-        <div class="skill-item">PyTorch (learning)</div>
-        <div class="skill-item">Anomaly Detection</div>
-        <div class="skill-item">K-Means Clustering</div>
-        <div class="skill-item">Regression · Classification</div>
-      </div>
-      <div class="skill-column">
-        <div class="skill-col-title">Engineering</div>
-        <div class="skill-item">Python · NumPy · Pandas</div>
-        <div class="skill-item">FastAPI</div>
-        <div class="skill-item">Docker</div>
-        <div class="skill-item">Git · Linux</div>
-        <div class="skill-item">AWS (learning)</div>
-        <div class="skill-item">REST APIs</div>
-      </div>
-      <div class="skill-column">
-        <div class="skill-col-title">Mathematics</div>
-        <div class="skill-item">Linear Algebra (MIT 18.06)</div>
-        <div class="skill-item">SVD · Orthogonality</div>
-        <div class="skill-item">Calculus · Gradients</div>
-        <div class="skill-item">Probability & Stats</div>
-        <div class="skill-item">Information Theory</div>
-      </div>
-    </div>
-    <span class="page-num">p. 05</span>
-  </section>
-
-  <hr class="page-divider"/>
-
-  <!-- CONTACT -->
-  <section id="contact" class="page">
-    <div class="section-header">
-      <span class="section-num">§ 05</span>
-      <h2 class="section-title">Contact</h2>
-    </div>
-    <div class="contact-letter fade-in">
-      <div class="letter-date">March 2026, Bengaluru</div>
-      <div class="letter-salutation">Let's build something.</div>
-      <p class="letter-body">Open to internships, research collaborations,<br/>and problems worth losing sleep over.<br/>Reach out — I respond.</p>
-      <div class="letter-sign">— Aditya ND</div>
+    <!-- CONTACT -->
+    <section id="contact">
+      <div class="section-label">§ 05</div>
+      <div class="contact-header">March 2026, Bengaluru</div>
+      <div class="contact-statement">Let's build something.</div>
+      <p class="contact-sub">
+        Open to research collaborations<br/>
+        and problems worth losing sleep over.<br/>
+        Reach out — I respond.
+      </p>
       <div class="contact-links">
-        <a href="https://github.com/adityandandia" class="clink" target="_blank">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-          GITHUB
-        </a>
-        <a href="https://linkedin.com/in/adityandandia" class="clink" target="_blank">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-          LINKEDIN
-        </a>
-        <a href="mailto:wimpykidaditya@gmail.com" class="clink">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          EMAIL
-        </a>
-        <a href="https://drive.google.com/file/d/1PIHPGdYD_8BlnLVVz922FdDCE2Kn45tI/view?usp=drive_link" class="clink" target="_blank">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          RESUME
-        </a>
+        <a class="contact-link" href="https://github.com/adityandandia" target="_blank" rel="noopener">GitHub</a>
+        <a class="contact-link" href="https://linkedin.com/in/adityandandia" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="contact-link" href="/cdn-cgi/l/email-protection#9fe8f6f2efe6f4f6fbfefbf6ebe6fedff8f2fef6f3b1fcf0f2">Email</a>
+        <a class="contact-link" href="https://drive.google.com/file/d/1PIHPGdYD_8BlnLVVz922FdDCE2Kn45tI/view?usp=drive_link" target="_blank" rel="noopener">Resume</a>
       </div>
-    </div>
-    <span class="page-num">p. 06</span>
-  </section>
+      <div class="contact-sign">— Aditya ND</div>
+      <div class="page-num">p. 06</div>
+    </section>
 
-  <footer class="notebook-footer">
-    <span class="footer-text">© 2026 ADITYA ND · @wimpykidaditya · BENGALURU</span>
-    <span class="footer-stamp">FIELD NOTES</span>
-  </footer>
+  </div>
 
-</div>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  const observer = new IntersectionObserver((
+  <footer>
+    <span>© 2026 Aditya ND · @wimpykidaditya · Bengaluru</span>
+    <span>F
